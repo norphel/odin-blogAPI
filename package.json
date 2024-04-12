@@ -1,0 +1,25 @@
+{
+  "name": "lets-blog",
+  "version": "1.0.0",
+  "description": "Backend app for Let's Blog",
+  "main": "index.js",
+  "type": "module",
+  "private": "true",
+  "scripts": {
+    "dev": "node --watch index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/norphel/odin-blogAPI.git"
+  },
+  "author": "Tsering Norphel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/norphel/odin-blogAPI/issues"
+  },
+  "homepage": "https://github.com/norphel/odin-blogAPI#readme",
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.3.1"
+  }
+}
