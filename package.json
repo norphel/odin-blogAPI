@@ -6,7 +6,7 @@
   "type": "module",
   "private": "true",
   "scripts": {
-    "dev": "node --watch index.js"
+    "dev": "node --watch /src/index.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/norphel/odin-blogAPI#readme",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mongoose": "^8.3.1"
   }
