@@ -124,8 +124,6 @@ const loginUser = [
     .trim()
     .notEmpty()
     .withMessage("Password is required")
-    .isLength({ min: 8, max: 24 })
-    .withMessage("Password must be 8-24 characters long")
     .escape(),
 
   asyncHandler(async (req, res) => {
@@ -151,7 +149,7 @@ const loginUser = [
       user
     );
     const authenticatedUser = await User.findById(user._id).select(
-      "_id, displayName, username"
+      "_id displayName username"
     );
 
     const options = { httpOnly: true, secure: true };
