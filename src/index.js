@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 
 import { DB_NAME } from "./constants.js";
 
@@ -27,6 +28,7 @@ try {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 //import routes
 import userRouter from "./routes/user.route.js";
