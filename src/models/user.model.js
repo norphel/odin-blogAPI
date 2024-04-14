@@ -47,6 +47,9 @@ const userSchema = new Schema(
 );
 
 userSchema.methods.generateAccessToken = function () {
+  console.log("Generating Access Token");
+
+  console.log(process.env.ACCESS_TOKEN_EXPIRY);
   return jwt.sign(
     {
       _id: this._id,
@@ -59,6 +62,8 @@ userSchema.methods.generateAccessToken = function () {
 };
 
 userSchema.methods.generateRefreshToken = function () {
+  console.log("Generating Refresh Token");
+
   return jwt.sign(
     {
       _id: this._id,

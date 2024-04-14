@@ -13,11 +13,15 @@ const generateAccessAndRefreshTokens = async (user) => {
     const refreshToken = user.generateRefreshToken();
 
     user.refreshToken = refreshToken;
-    await user.save({ validateBeforeSave: false });
+    await user.save();
 
     return { accessToken, refreshToken };
   } catch (error) {
-    throw new ApiError(500, "Something went wrong while generating tokens");
+    throw new ApiError(
+      500,
+      "Something went wrong while generating tokens",
+      error
+    );
   }
 };
 
@@ -106,4 +110,60 @@ const registerUser = [
   }),
 ];
 
-export { registerUser };
+const loginUser = [
+  upload.none(),
+
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Invalid email format")
+    .escape(),
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("Password is required")
+    .isLength({ min: 8, max: 24 })
+    .withMessage("Password must be 8-24 characters long")
+    .escape(),
+
+  asyncHandler(async (req, res) => {
+    const result = validationResult(req);
+
+    if (!result.isEmpty()) {
+      res.status(400).json({ errors: result.array() });
+    }
+
+    const data = matchedData(req);
+
+    const user = await User.findOne({ email: data.email });
+    if (!user) {
+      throw new ApiError(404, "No user with given email exist");
+    }
+
+    const isPasswordValid = await bcrypt.compare(data.password, user.password);
+    if (!isPasswordValid) {
+      throw new ApiError(401, "Password Incorrect");
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+      user
+    );
+    const authenticatedUser = await User.findById(user._id).select(
+      "_id, displayName, username"
+    );
+
+    const options = { httpOnly: true, secure: true };
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json({
+        user: authenticatedUser,
+        message: "User logged in successfully",
+      });
+  }),
+];
+
+export { registerUser, loginUser };
