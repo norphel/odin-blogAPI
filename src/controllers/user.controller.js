@@ -7,6 +7,20 @@ import bcrypt from "bcrypt";
 
 const upload = multer();
 
+const generateAccessAndRefreshTokens = async (user) => {
+  try {
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(500, "Something went wrong while generating tokens");
+  }
+};
+
 const registerUser = [
   upload.none(),
 
@@ -39,7 +53,7 @@ const registerUser = [
     const result = validationResult(req);
 
     if (!result.isEmpty()) {
-      return res.json({ errors: result.array() });
+      return res.status(400).json({ errors: result.array() });
     }
 
     const data = matchedData(req);
