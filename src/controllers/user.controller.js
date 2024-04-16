@@ -1,4 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
+import getInitials from "../utils/getInitials.js";
+import generateSVG from "../utils/generateSVG.js";
 import { body, matchedData, validationResult } from "express-validator";
 import multer from "multer";
 import { User } from "../models/user.model.js";
@@ -183,4 +185,16 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json({ message: "User logged out successfully" });
 });
 
-export { registerUser, loginUser, logoutUser };
+const getUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select(
+    "-password -refreshToken"
+  );
+
+  if (user.profilePicture === undefined) {
+    const initials = getInitials(user.displayName);
+    user.profilePicture = generateSVG(initials).trim();
+  }
+  res.json({ user: user });
+});
+
+export { registerUser, loginUser, logoutUser, getUserProfile };
