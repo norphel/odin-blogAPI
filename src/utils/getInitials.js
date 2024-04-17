@@ -3,5 +3,5 @@ export default function getInitials(displayName) {
   for (const name of displayName.split(" ")) {
     initials += name.charAt(0);
   }
-  return initials.slice(0, 2);
+  return initials.slice(0, 2).toUpperCase();
 }
