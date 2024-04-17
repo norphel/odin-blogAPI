@@ -4,6 +4,7 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  updateProfilePicture,
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -15,5 +16,6 @@ router.post("/login", loginUser);
 // protected routes
 router.post("/logout", verifyJWT, logoutUser);
 router.get("/profile", verifyJWT, getUserProfile);
+router.patch("/profile/profilePicture", verifyJWT, updateProfilePicture);
 
 export default router;

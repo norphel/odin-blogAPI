@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 import { DB_NAME } from "./constants.js";
 
@@ -26,9 +27,11 @@ try {
   process.exit(1);
 }
 
+app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(express.static("public"));
 
 //import routes
 import userRouter from "./routes/user.route.js";

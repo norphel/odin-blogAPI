@@ -6,8 +6,24 @@ import multer from "multer";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import bcrypt from "bcrypt";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
+import path from "path";
 
-const upload = multer();
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/temp");
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 const generateAccessAndRefreshTokens = async (user) => {
   try {
@@ -197,4 +213,45 @@ const getUserProfile = asyncHandler(async (req, res) => {
   res.json({ user: user });
 });
 
-export { registerUser, loginUser, logoutUser, getUserProfile };
+const updateProfilePicture = [
+  upload.single("profilePicture"),
+
+  asyncHandler(async (req, res) => {
+    const localPath = req.file?.path;
+
+    if (!localPath) {
+      throw new ApiError(400, "Profile Picture file is missing");
+    }
+
+    const profilePicture = await uploadToCloudinary(localPath);
+    if (!profilePicture.url) {
+      throw new ApiError(400, "Error while uploading profile photo");
+    }
+
+    // delete the previous profile photo from cloudinary
+    const user = await User.findById(req.user?._id).select(
+      "-password -refreshToken"
+    );
+
+    const oldPhotoURL = user.profilePicture;
+    if (oldPhotoURL) {
+      const response = deleteFromCloudinary(oldPhotoURL);
+      console.log(response);
+    }
+    user.profilePicture = profilePicture.url;
+    const updatedUser = await user.save();
+
+    return res.status(200).json({
+      message: "Profile photo updated successfully",
+      user: updatedUser,
+    });
+  }),
+];
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getUserProfile,
+  updateProfilePicture,
+};
