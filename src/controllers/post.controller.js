@@ -5,6 +5,7 @@ import { body, matchedData, validationResult } from "express-validator";
 import { ApiError } from "../utils/ApiError.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/user.model.js";
+import mongoose from "mongoose";
 
 const getAllPosts = asyncHandler(async (req, res) => {
   const allPosts = await Post.find({ isPublished: true });
@@ -14,10 +15,14 @@ const getAllPosts = asyncHandler(async (req, res) => {
 });
 
 const getSpecificPost = asyncHandler(async (req, res) => {
-  const { postID } = req.params.postID;
-  const post = await Post.findById(postID);
-  if (!post) return res.status(404).json({ message: "Post not found" });
-  return res.status(200).json({ post: post });
+  const { postID } = req.params;
+  if (mongoose.Types.ObjectId.isValid(postID)) {
+    const post = await Post.findById(postID);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+    return res.status(200).json({ post: post });
+  } else {
+    throw new ApiError(400, "Invalid post ID");
+  }
 });
 
 const createNewPost = [
