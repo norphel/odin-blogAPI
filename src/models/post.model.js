@@ -10,7 +10,10 @@ const postSchema = new Schema(
       type: String,
       required: true,
     },
-    images: [String],
+    thumbnailImage: {
+      type: String,
+      required: true,
+    },
     author: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -19,12 +22,6 @@ const postSchema = new Schema(
       type: Number,
       default: 0,
     },
-    categories: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Category",
-      },
-    ],
     isPublished: {
       type: Boolean,
       default: false,
