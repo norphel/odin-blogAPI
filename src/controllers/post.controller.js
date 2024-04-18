@@ -7,8 +7,9 @@ import { uploadToCloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/user.model.js";
 
 const getAllPosts = asyncHandler(async (req, res) => {
-  const allPosts = await Post.find();
-  if (!allPosts) return res.status(200).json({ message: "No posts yet" });
+  const allPosts = await Post.find({ isPublished: true });
+  if (!allPosts || allPosts.length === 0)
+    return res.status(200).json({ message: "No posts yet" });
   return res.status(200).json({ posts: allPosts });
 });
 
