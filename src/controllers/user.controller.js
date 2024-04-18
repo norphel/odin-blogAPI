@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import getInitials from "../utils/getInitials.js";
 import generateSVG from "../utils/generateSVG.js";
 import { body, matchedData, validationResult } from "express-validator";
-import multer from "multer";
+import { upload } from "../middlewares/multer.middleware.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import bcrypt from "bcrypt";
@@ -10,20 +10,6 @@ import {
   uploadToCloudinary,
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
-import path from "path";
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./public/temp");
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
-  },
-});
-
-const upload = multer({ storage: storage });
 
 const generateAccessAndRefreshTokens = async (user) => {
   try {

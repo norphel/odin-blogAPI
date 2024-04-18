@@ -1,5 +1,9 @@
 import { Post } from "../models/post.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { upload } from "../middlewares/multer.middleware.js";
+import { body, matchedData, validationResult } from "express-validator";
+import { ApiError } from "../utils/ApiError.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
 
 const getAllPosts = asyncHandler(async (req, res) => {
   const allPosts = await Post.find();
@@ -14,4 +18,53 @@ const getSpecificPost = asyncHandler(async (req, res) => {
   return res.status(200).json({ post: post });
 });
 
-export { getAllPosts, getSpecificPost };
+const createNewPost = [
+  upload.single("thumbnailImage"),
+
+  body("title")
+    .trim()
+    .notEmpty()
+    .withMessage("Post title is required")
+    .escape(),
+  body("content")
+    .trim()
+    .notEmpty()
+    .withMessage("Post content is required")
+    .escape(),
+  body("thumbnailImage").exists().escape(),
+
+  asyncHandler(async (req, res) => {
+    const results = validationResult(req);
+
+    if (!results.isEmpty()) {
+      throw new ApiError(400, "", results.array());
+    }
+
+    // upload thumbnail image to cloudinary
+    const thumbnailImageLocalPath = req.files?.path;
+    if (!thumbnailImageLocalPath) {
+      throw new ApiError(400, "Thumbnail image is missing");
+    }
+
+    const thumbnailImage = await uploadToCloudinary(thumbnailImageLocalPath);
+    if (!thumbnailImage.url) {
+      throw new ApiError(400, "Error while uploading thumbnail image");
+    }
+
+    const data = matchedData(req);
+    const authorID = req.user._id;
+    const post = new Post({
+      title: data.title,
+      content: data.content,
+      thumbnailImage: thumbnailImage.url,
+      author: authorID,
+    });
+
+    const savedPost = await post.save();
+    res
+      .status(200)
+      .json({ message: "Post saved successfully", post: savedPost });
+  }),
+];
+
+export { getAllPosts, getSpecificPost, createNewPost };
