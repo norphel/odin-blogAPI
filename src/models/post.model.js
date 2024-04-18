@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-const blogSchema = new Schema(
+const postSchema = new Schema(
   {
     title: {
       type: String,
@@ -25,8 +25,18 @@ const blogSchema = new Schema(
         ref: "Category",
       },
     ],
+    isPublished: {
+      type: Boolean,
+      default: false,
+    },
+    comments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Comment",
+      },
+    ],
   },
   { timestamps: true }
 );
 
-export const Blog = mongoose.model("Blog", blogSchema);
+export const Post = mongoose.model("Post", postSchema);
