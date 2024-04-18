@@ -6,7 +6,10 @@ import {
 } from "../controllers/post.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
+import commentRouter from "./comment.route.js";
+
 const router = Router();
+router.use("/", commentRouter);
 
 router.get("/", getAllPosts);
 router.get("/:postID", getSpecificPost);
