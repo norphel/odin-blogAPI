@@ -8,8 +8,10 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.get("/posts", getAllPosts);
-router.get("/posts/:postID", getSpecificPost);
+router.get("/", getAllPosts);
+router.get("/:postID", getSpecificPost);
 
 // secured routes
-router.post("/posts", verifyJWT, createNewPost);
+router.post("/", verifyJWT, createNewPost);
+
+export default router;

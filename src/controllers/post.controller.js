@@ -4,6 +4,7 @@ import { upload } from "../middlewares/multer.middleware.js";
 import { body, matchedData, validationResult } from "express-validator";
 import { ApiError } from "../utils/ApiError.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
+import { User } from "../models/user.model.js";
 
 const getAllPosts = asyncHandler(async (req, res) => {
   const allPosts = await Post.find();
@@ -31,17 +32,16 @@ const createNewPost = [
     .notEmpty()
     .withMessage("Post content is required")
     .escape(),
-  body("thumbnailImage").exists().escape(),
 
   asyncHandler(async (req, res) => {
     const results = validationResult(req);
 
     if (!results.isEmpty()) {
-      throw new ApiError(400, "", results.array());
+      return res.status(400).json({ error: results.array() });
     }
 
     // upload thumbnail image to cloudinary
-    const thumbnailImageLocalPath = req.files?.path;
+    const thumbnailImageLocalPath = req.file?.path;
     if (!thumbnailImageLocalPath) {
       throw new ApiError(400, "Thumbnail image is missing");
     }
@@ -61,6 +61,11 @@ const createNewPost = [
     });
 
     const savedPost = await post.save();
+
+    //update user.posts
+    const user = await User.findById(authorID);
+    user.posts.push(savedPost._id);
+    await user.save();
     res
       .status(200)
       .json({ message: "Post saved successfully", post: savedPost });
