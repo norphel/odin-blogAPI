@@ -70,17 +70,16 @@ const registerUser = [
     const existingUsername = await User.findOne({ username: data.username });
 
     if (existingUsername) {
-      throw new ApiError(409, "username already taken");
+      return res.status(409).json({ error: "username already taken" });
     }
 
     // check if email already exists
     const existingEmail = await User.findOne({ email: data.email });
 
     if (existingEmail) {
-      throw new ApiError(
-        409,
-        "User with this email exists. Consider signing up."
-      );
+      return res
+        .status(409)
+        .json({ error: "A user with given email already exists." });
     }
 
     // create user entry in db
@@ -101,16 +100,18 @@ const registerUser = [
     );
 
     if (!createdUser) {
-      throw new ApiError(
-        500,
-        "Something went wrong while registering. Please try again"
-      );
+      res.status(500).json({
+        error: "Something went wrong while registering. Please try again",
+      });
     }
 
     // return response
     return res
       .status(201)
-      .json({ user: createdUser, msg: "User registered successfully" });
+      .json({
+        user: createdUser,
+        msg: "User registered successfully! Kindly login now.",
+      });
   }),
 ];
 
