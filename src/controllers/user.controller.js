@@ -106,12 +106,10 @@ const registerUser = [
     }
 
     // return response
-    return res
-      .status(201)
-      .json({
-        user: createdUser,
-        msg: "User registered successfully! Kindly login now.",
-      });
+    return res.status(201).json({
+      user: createdUser,
+      msg: "User registered successfully! Kindly login now.",
+    });
   }),
 ];
 
@@ -142,12 +140,12 @@ const loginUser = [
 
     const user = await User.findOne({ email: data.email });
     if (!user) {
-      throw new ApiError(404, "No user with given email exist");
+      return res.status(404).json({ error: "No user with given email exist" });
     }
 
     const isPasswordValid = await bcrypt.compare(data.password, user.password);
     if (!isPasswordValid) {
-      throw new ApiError(401, "Password Incorrect");
+      return res.status(404).json({ error: "Incorrect password!" });
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
@@ -157,14 +155,14 @@ const loginUser = [
       "_id displayName username"
     );
 
-    const options = { httpOnly: true, secure: true };
+    const options = { httpOnly: true };
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
       .cookie("refreshToken", refreshToken, options)
       .json({
         user: authenticatedUser,
-        message: "User logged in successfully",
+        msg: "User logged in successfully",
       });
   }),
 ];
