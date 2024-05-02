@@ -8,10 +8,35 @@ import { User } from "../models/user.model.js";
 import mongoose from "mongoose";
 
 const getAllPosts = asyncHandler(async (req, res) => {
-  const allPosts = await Post.find({ isPublished: true });
+  const allPosts = await Post.find({ isPublished: true }).populate(
+    "author comments"
+  );
   if (!allPosts || allPosts.length === 0)
     return res.status(200).json({ message: "No posts yet" });
   return res.status(200).json({ posts: allPosts });
+});
+
+const getAllPublishedPostsOfAUser = asyncHandler(async (req, res) => {
+  const { userID } = req.params;
+  const allPostsOfUser = await Post.find({
+    author: userID,
+    isPublished: true,
+  }).populate("comments");
+
+  return res.status(200).json({ posts: allPostsOfUser });
+});
+
+const getAllPostsOfAUser = asyncHandler(async (req, res) => {
+  const { userID } = req.params;
+  if (req.user._id.toString() === userID) {
+    const allPostsOfUser = await Post.find({
+      author: userID,
+    }).populate("comments");
+
+    return res.status(200).json({ posts: allPostsOfUser });
+  } else {
+    return res.status(400).json({ error: "Unauthorized request" });
+  }
 });
 
 const getSpecificPost = asyncHandler(async (req, res) => {
@@ -49,12 +74,14 @@ const createNewPost = [
     // upload thumbnail image to cloudinary
     const thumbnailImageLocalPath = req.file?.path;
     if (!thumbnailImageLocalPath) {
-      throw new ApiError(400, "Thumbnail image is missing");
+      return res.status(400).json({ error: "Thumbnail image is missing" });
     }
 
     const thumbnailImage = await uploadToCloudinary(thumbnailImageLocalPath);
     if (!thumbnailImage.url) {
-      throw new ApiError(400, "Error while uploading thumbnail image");
+      return res
+        .status(500)
+        .json({ error: "Error while uploading thumbnail image" });
     }
 
     const data = matchedData(req);
@@ -78,4 +105,31 @@ const createNewPost = [
   }),
 ];
 
-export { getAllPosts, getSpecificPost, createNewPost };
+const changePublishedStatus = asyncHandler(async (req, res) => {
+  const { postID } = req.params;
+  const { isPublished } = req.body;
+
+  const post = await Post.findById(postID);
+
+  if (post.author.toString() === req.user._id.toString()) {
+    post.isPublished = isPublished;
+    await post.save();
+
+    if (isPublished === true) {
+      return res.status(200).json({ message: "Published successfully" });
+    } else {
+      return res.status(200).json({ message: "Unpublished successfully" });
+    }
+  } else {
+    return res.status(400).json({ error: "Unauthorized request" });
+  }
+});
+
+export {
+  getAllPosts,
+  getAllPublishedPostsOfAUser,
+  getAllPostsOfAUser,
+  getSpecificPost,
+  createNewPost,
+  changePublishedStatus,
+};
