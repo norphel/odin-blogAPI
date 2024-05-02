@@ -107,7 +107,12 @@ const createNewPost = [
 
 const changePublishedStatus = asyncHandler(async (req, res) => {
   const { postID } = req.params;
-  const { isPublished } = req.body;
+  let { isPublished } = req.body;
+  if (isPublished === "true") {
+    isPublished = true;
+  } else if (isPublished === "false") {
+    isPublished = false;
+  }
 
   const post = await Post.findById(postID);
 
