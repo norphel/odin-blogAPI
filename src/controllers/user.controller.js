@@ -209,7 +209,7 @@ const updateProfilePicture = [
     }
 
     const profilePicture = await uploadToCloudinary(localPath);
-    if (!profilePicture.url) {
+    if (!profilePicture?.url) {
       throw new ApiError(400, "Error while uploading profile photo");
     }
 
