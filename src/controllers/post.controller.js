@@ -213,7 +213,7 @@ const deletePost = asyncHandler(async (req, res) => {
   const post = await Post.findById(postID);
 
   if (!post) {
-    res.status(400).json({ message: "Invalid post id" });
+    return res.status(400).json({ message: "Invalid post id" });
   }
 
   if (post.author.toString() !== req.user._id.toString()) {
@@ -223,6 +223,14 @@ const deletePost = asyncHandler(async (req, res) => {
   const author = await User.findById(post.author).select(
     "-password -refreshToken"
   );
+
+  // delete the thumbnail image from cloudinary
+
+  const thumbnailImageUrl = post.thumbnailImage;
+  if (thumbnailImageUrl) {
+    const response = await deleteFromCloudinary(thumbnailImageUrl);
+    console.log(response);
+  }
 
   // delete the post itself
   await Post.findByIdAndDelete(postID);
