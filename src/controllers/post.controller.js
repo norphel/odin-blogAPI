@@ -135,7 +135,7 @@ const changePublishedStatus = asyncHandler(async (req, res) => {
       return res.status(200).json({ message: "Unpublished successfully" });
     }
   } else {
-    return res.status(403).json({ error: "Unauthorized request" });
+    return res.status(401).json({ error: "Unauthorized request" });
   }
 });
 
@@ -207,6 +207,33 @@ const editPost = [
   }),
 ];
 
+const deletePost = asyncHandler(async (req, res) => {
+  const { postID } = req.params;
+
+  const post = await Post.findById(postID);
+
+  if (!post) {
+    res.status(400).json({ message: "Invalid post id" });
+  }
+
+  if (post.author.toString() !== req.user._id.toString()) {
+    return res.status(401).json({ error: "Unauthorized request" });
+  }
+
+  const author = await User.findById(post.author).select(
+    "-password -refreshToken"
+  );
+
+  // delete the post itself
+  await Post.findByIdAndDelete(postID);
+
+  // delete the post id stored in posts field of user
+  author.posts = author.posts.filter((id) => id.toString() !== postID);
+  await author.save();
+
+  res.status(200).json({ message: "Post deleted successfully" });
+});
+
 export {
   getAllPosts,
   getAllPublishedPostsOfAUser,
@@ -215,4 +242,5 @@ export {
   createNewPost,
   changePublishedStatus,
   editPost,
+  deletePost,
 };
