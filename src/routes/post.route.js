@@ -8,6 +8,7 @@ import {
   changePublishedStatus,
   editPost,
   deletePost,
+  likeUnlikePost,
 } from "../controllers/post.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -25,5 +26,6 @@ router.post("/", verifyJWT, createNewPost);
 router.get("/user/:userID/all", verifyJWT, getAllPostsOfAUser);
 router.patch("/:postID/published", verifyJWT, changePublishedStatus);
 router.patch("/:postID/edit", verifyJWT, editPost);
+router.patch("/:postID", verifyJWT, likeUnlikePost);
 router.delete("/:postID", verifyJWT, deletePost);
 export default router;

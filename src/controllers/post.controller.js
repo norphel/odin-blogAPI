@@ -242,6 +242,32 @@ const deletePost = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "Post deleted successfully" });
 });
 
+const likeUnlikePost = asyncHandler(async (req, res) => {
+  const { postID } = req.params;
+  const { action } = req.query;
+  console.log(action);
+
+  const post = await Post.findById(postID);
+  if (!post) {
+    return res.status(400).json({ message: "Invalid post id" });
+  }
+
+  if (!(action === "like" || action == "unlike")) {
+    return res.status(400).json({ message: "Invalid action." });
+  }
+
+  if (action === "like") {
+    post.likes += 1;
+  } else if (action === "unlike") {
+    post.likes -= 1;
+  }
+  await post.save();
+
+  const updatePost = await Post.findById(postID);
+
+  res.status(200).json({ updatePost });
+});
+
 export {
   getAllPosts,
   getAllPublishedPostsOfAUser,
@@ -251,4 +277,5 @@ export {
   changePublishedStatus,
   editPost,
   deletePost,
+  likeUnlikePost,
 };
