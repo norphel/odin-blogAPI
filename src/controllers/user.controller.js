@@ -1,6 +1,4 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import getInitials from "../utils/getInitials.js";
-import generateSVG from "../utils/generateSVG.js";
 import { body, matchedData, validationResult } from "express-validator";
 import { upload } from "../middlewares/multer.middleware.js";
 import { User } from "../models/user.model.js";
@@ -192,8 +190,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
   );
 
   if (user.profilePicture === undefined) {
-    const initials = getInitials(user.displayName);
-    user.profilePicture = generateSVG(initials).trim();
+    user.profilePicture = "";
   }
   res.json({ user: user });
 });
